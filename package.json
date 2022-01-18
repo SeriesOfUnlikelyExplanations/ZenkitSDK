@@ -1,0 +1,27 @@
+{
+  "name": "ZenkitSDK",
+  "version": "1.0.1",
+  "description": "An unofficial NodeJs client for Zenkit's API",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "run": "node tests/manualTest.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SeriesOfUnlikelyExplanations/ZenkitSDK.git"
+  },
+  "keywords": [
+    "Zenkit",
+    "Zenkit Base",
+    "Zenkit ToDo",
+    "Project Management",
+    "Zenkit.com"
+  ],
+  "author": "Tom Woodard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SeriesOfUnlikelyExplanations/ZenkitSDK/issues"
+  },
+  "homepage": "https://github.com/SeriesOfUnlikelyExplanations/ZenkitSDK#readme"
+}
