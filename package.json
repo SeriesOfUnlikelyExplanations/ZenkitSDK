@@ -18,6 +18,12 @@
     "type": "git",
     "url": "git+https://github.com/SeriesOfUnlikelyExplanations/ZenkitSDK.git"
   },
+  "nyc": {
+    "reporter": [
+      "json",
+      "html"
+    ]
+  },
   "keywords": [
     "Zenkit",
     "Zenkit Base",
