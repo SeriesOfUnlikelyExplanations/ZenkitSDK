@@ -51,7 +51,7 @@ describe("Testing the skill", function() {
       expect(workspaces).to.be.instanceof(Array);
       expect(workspaces).to.have.length(2);
       expect(zenkitSDK.defaultWorkspace).to.be.instanceof(Object);
-      expect(zenkitSDK.defaultWorkspace).to.have.key('lists');
+      expect(zenkitSDK.defaultWorkspace).to.have.property('lists');
       expect(zenkitSDK.defaultWorkspace.id).to.equal(442548);
       expect(zenkitSDK.defaultWorkspaceId).to.equal(442548);
     });
@@ -61,10 +61,10 @@ describe("Testing the skill", function() {
       const workspaces = await zenkitSDK.getWorkspaces()
       expect(workspaces).to.be.instanceof(Array);
       expect(workspaces).to.have.length(1);
-      
-      expect(zenkitSDK.defaultWorkspace.id).to.equal(442548);
-      expect(zenkitSDK.defaultWorkspaceId).to.equal(442548);
+      expect(zenkitSDK.defaultWorkspace).to.be.undefined;
     });
+    
+    
     
     xit('Try to trigger Zenkit --> Alexa sync with no to-do workspace', async() => {
       var ctx = context();
