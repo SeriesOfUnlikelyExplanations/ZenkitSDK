@@ -63,6 +63,17 @@ describe("Testing the skill", function() {
       expect(workspaces).to.have.length(1);
       expect(zenkitSDK.defaultWorkspace).to.be.undefined;
     });
+    it('getWorkspaces - Base app', async () => {
+      zenkitNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA_NO_TODO;
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization', appType: 'base' });
+      const workspaces = await zenkitSDK.getWorkspaces()
+      expect(workspaces).to.be.instanceof(Array);
+      expect(workspaces).to.have.length(1);
+      expect(zenkitSDK.defaultWorkspace).to.be.instanceof(Object);
+      expect(zenkitSDK.defaultWorkspace).to.have.property('lists');
+      expect(zenkitSDK.defaultWorkspace.id).to.equal(442548);
+      expect(zenkitSDK.defaultWorkspaceId).to.equal(442548);
+    });
     
     
     
@@ -79,24 +90,6 @@ describe("Testing the skill", function() {
             return body
         })
         .reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY)
-
-      nock('https://api.amazonalexa.com')
-        .post('/v2/householdlists/todo_list_list_id/items/', (body) => {
-          console.log('todo item one created in Alexa');
-          expect(body.value).to.equal('todo item one');
-          expect(body.status).to.equal('active');
-          return body
-        })
-        .reply(200, { "id": 'todo_list_item_id',
-          "value": 'todo item one',
-          "status": 'active',
-          "createdTime": 'Wed Sep 27 10:46:30 UTC 2017',
-          "updatedTime": 'Wed Sep 27 10:46:30 UTC 2017'
-        })
-        .delete('/v2/householdlists/shopping_list_list_id/items/item_id_two/')
-        .reply(200)
-        .delete('/v2/householdlists/custom_list_list_id/items/item_id_two/')
-        .reply(200);
 
       zenkitNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA_NO_TODO;
 
