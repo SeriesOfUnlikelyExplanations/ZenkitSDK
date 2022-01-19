@@ -50,14 +50,18 @@ describe("Testing the skill", function() {
       const workspaces = await zenkitSDK.getWorkspaces()
       expect(workspaces).to.be.instanceof(Array);
       expect(workspaces).to.have.length(2);
+      expect(zenkitSDK.defaultWorkspace).to.be.instanceof(Object);
+      expect(zenkitSDK.defaultWorkspace).to.have.key('lists');
       expect(zenkitSDK.defaultWorkspace.id).to.equal(442548);
       expect(zenkitSDK.defaultWorkspaceId).to.equal(442548);
     });
     it('getWorkspaces - No Default', async () => {
+      zenkitNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA_NO_TODO;
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       const workspaces = await zenkitSDK.getWorkspaces()
       expect(workspaces).to.be.instanceof(Array);
-      expect(workspaces).to.have.length(2);
+      expect(workspaces).to.have.length(1);
+      
       expect(zenkitSDK.defaultWorkspace.id).to.equal(442548);
       expect(zenkitSDK.defaultWorkspaceId).to.equal(442548);
     });
