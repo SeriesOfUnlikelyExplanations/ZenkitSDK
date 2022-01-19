@@ -4,8 +4,15 @@
   "description": "An unofficial NodeJs client for Zenkit's API",
   "main": "index.js",
   "scripts": {
-    "test": "test",
+    "test": "mocha",
+    "deploy-test":"nyc mocha",
     "run": "node tests/manualTest.js"
+  },
+    "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^9.1.3",
+    "nock": "^12.0.3",
+    "nyc": "^15.1.0"
   },
   "repository": {
     "type": "git",
