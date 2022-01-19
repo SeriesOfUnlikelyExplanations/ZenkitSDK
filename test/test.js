@@ -8,7 +8,7 @@ const zenkit = require('./zenkitTestData.js');
 describe("Testing the skill", function() {
   this.timeout(4000);
   before(() => {
-    zenkitNock = nock('https://todo.zenkit.com')
+    todoNock = nock('https://todo.zenkit.com')
       .persist()
       .get('/api/v1/users/me/workspacesWithLists')
       .reply(200, zenkit.ZENKIT_WORKSPACE_DATA)
@@ -36,7 +36,10 @@ describe("Testing the skill", function() {
       .reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY)
       .post('/api/v1/lists/1347812/entries')
       .reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY);
-
+    baseNock = nock('https://base.zenkit.com')
+      .persist()
+      .get('/api/v1/users/me/workspacesWithLists')
+      .reply(200, zenkit.ZENKIT_WORKSPACE_DATA)
     nock.emitter.on("no match", (req) => {
       console.log(req.path)
       console.log(req.method)
@@ -56,24 +59,30 @@ describe("Testing the skill", function() {
       expect(zenkitSDK.defaultWorkspaceId).to.equal(442548);
     });
     it('getWorkspaces - No Default', async () => {
-      zenkitNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA_NO_TODO;
+      todoNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA_NO_TODO;
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       const workspaces = await zenkitSDK.getWorkspaces()
       expect(workspaces).to.be.instanceof(Array);
       expect(workspaces).to.have.length(1);
       expect(zenkitSDK.defaultWorkspace).to.be.undefined;
+      todoNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA;
     });
     it('getWorkspaces - Base app', async () => {
-      zenkitNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA_NO_TODO;
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization', appType: 'base' });
       const workspaces = await zenkitSDK.getWorkspaces()
       expect(workspaces).to.be.instanceof(Array);
-      expect(workspaces).to.have.length(1);
+      expect(workspaces).to.have.length(2);
       expect(zenkitSDK.defaultWorkspace).to.be.instanceof(Object);
       expect(zenkitSDK.defaultWorkspace).to.have.property('lists');
-      expect(zenkitSDK.defaultWorkspace.id).to.equal(442548);
-      expect(zenkitSDK.defaultWorkspaceId).to.equal(442548);
+      expect(zenkitSDK.defaultWorkspace.id).to.equal(442026);
+      expect(zenkitSDK.defaultWorkspaceId).to.equal(442026);
     });
+    it('getWorkspaces - bad appType', async () => {
+      expect(function(){
+        new ZenkitSDK('key', { keyType: 'Authorization', appType: 'blah' });
+      }).to.throw('appType - blah - not supported');
+    });
+    
     
     
     

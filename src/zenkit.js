@@ -12,7 +12,10 @@ class ZenkitSDK {
    * @param {String} key
    */
   constructor(key, { keyType = 'Zenkit-API-Key', appType = 'todo', apiScope = 'api/v1' }) {
-    this.host = `${sappType}.zenkit.com`; // use this to determine which app we are in. This class is primarily modeled after todo, I'd like to modify to support the base and hypernotes app at some point.
+    if (!['base','todo'].includes(appType)) {
+      throw(`appType - ${appType} - not supported`);
+    }
+    this.host = `${appType}.zenkit.com`; // use this to determine which app we are in. This class is primarily modeled after todo, I'd like to modify to support the base and hypernotes app at some point.
     this.apiScope = apiScope;
     this.key = key;
     this.keyType = keyType; // can be 'Zenkit-API-Key' or 'Authorizaion' for oAuth Clients
@@ -27,9 +30,7 @@ class ZenkitSDK {
       )
     } else if (this.host === 'base.zenkit.com') {
       this.defaultWorkspace = this.workspaces.find(({ resourceTags, lists})  =>
-        resourceTags.some(({ appType, tag })  => appType === 'base' && tag === 'workspace')
-    } else {
-      this.defaultWorkspace = undefined;
+        resourceTags.some(({ appType, tag })  => appType === 'base' && tag === 'workspace'));
     }
     if (typeof this.defaultWorkspace != 'undefined') {
       this.defaultWorkspaceId = this.defaultWorkspace.id
