@@ -10,6 +10,7 @@ describe("Testing the skill", function() {
   before(() => {
     todoNock = nock('https://todo.zenkit.com')
       .persist()
+      .matchHeader('Authorization', 'key')
       .get('/api/v1/users/me/workspacesWithLists')
       .reply(200, zenkit.ZENKIT_WORKSPACE_DATA)
       .post('/api/v1/workspaces/442548/lists')
@@ -36,10 +37,13 @@ describe("Testing the skill", function() {
       .reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY)
       .post('/api/v1/lists/1347812/entries')
       .reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY);
+      
     baseNock = nock('https://base.zenkit.com')
       .persist()
+      .matchHeader('Zenkit-API-Key', 'key')
       .get('/api/v1/users/me/workspacesWithLists')
       .reply(200, zenkit.ZENKIT_WORKSPACE_DATA)
+      
     nock.emitter.on("no match", (req) => {
       console.log(req.path)
       console.log(req.method)
@@ -68,7 +72,7 @@ describe("Testing the skill", function() {
       todoNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA;
     });
     it('getWorkspaces - Base app', async () => {
-      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization', appType: 'base' });
+      const zenkitSDK = new ZenkitSDK('key', { appType: 'base' });
       const workspaces = await zenkitSDK.getWorkspaces()
       expect(workspaces).to.be.instanceof(Array);
       expect(workspaces).to.have.length(2);
@@ -82,8 +86,21 @@ describe("Testing the skill", function() {
         new ZenkitSDK('key', { keyType: 'Authorization', appType: 'blah' });
       }).to.throw('appType - blah - not supported');
     });
-    
-    
+    it('getWorkspaces - bad keyType', async () => {
+      expect(function(){
+        new ZenkitSDK('key', { keyType: 'blah'});
+      }).to.throw('keyType - blah - not supported');
+    });
+    it('setDefaultWorkspace', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await zenkitSDK.setDefaultWorkspace(442026);
+      expect(zenkitSDK.workspaces).to.be.instanceof(Array);
+      expect(zenkitSDK.workspaces).to.have.length(2);
+      expect(zenkitSDK.defaultWorkspace).to.be.instanceof(Object);
+      expect(zenkitSDK.defaultWorkspace).to.have.property('lists');
+      expect(zenkitSDK.defaultWorkspace.id).to.equal(442026);
+      expect(zenkitSDK.defaultWorkspaceId).to.equal(442026);
+    });
     
     
     xit('Try to trigger Zenkit --> Alexa sync with no to-do workspace', async() => {

@@ -15,6 +15,9 @@ class ZenkitSDK {
     if (!['base','todo'].includes(appType)) {
       throw(`appType - ${appType} - not supported`);
     }
+    if (!['Zenkit-API-Key','Authorization'].includes(keyType)) {
+      throw(`keyType - ${keyType} - not supported`);
+    }
     this.host = `${appType}.zenkit.com`; // use this to determine which app we are in. This class is primarily modeled after todo, I'd like to modify to support the base and hypernotes app at some point.
     this.apiScope = apiScope;
     this.key = key;
@@ -38,7 +41,7 @@ class ZenkitSDK {
     return this.workspaces
   }
   
-  async setDefaultWorkspaces(workspaceId) {
+  async setDefaultWorkspace(workspaceId) {
     if (!this.workspaces) {
       await this.getWorkspaces()
     }
@@ -210,18 +213,14 @@ class ZenkitSDK {
    //~ * @param  {Object} parameters
    //~ * @return {Promise}
    //~ */
-  async handleRequest(scope, method = 'GET', parameters = {}, queryParameters ={}) {
+  async handleRequest(scope, method = 'GET', parameters = {}) {
     // Define request options
     //~ queryParameters.ie = (new Date()).getTime();
     //~ queryParameters.show_archived = false
-    var queryString = '';
-    if (Object.keys(queryParameters).length) {
-      queryString = `?${querystring.stringify(queryParameters)}`
-    } 
     var options = {
       hostname: this.host,
       port: 443,
-      path: `/${this.apiScope}/${scope}${queryString}`,
+      path: `/${this.apiScope}/${scope}`,
       method: method,
       headers: {
         'Cache-Control':'no-cache',
