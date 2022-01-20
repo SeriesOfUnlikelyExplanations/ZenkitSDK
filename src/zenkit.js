@@ -93,6 +93,7 @@ class ZenkitSDK {
     if (!(listId in this.ListsInWorkspace)) {
       this.ListsInWorkspace[listId] = {};
     }
+    this.ListsInWorkspace[listId].id = listId;
     this.ListsInWorkspace[listId].titleUuid = elements.find(({ resourceTags }) => resourceTags.some(({ appType, tag }) => appType === 'todos' && tag === 'title')).uuid;
     this.ListsInWorkspace[listId].uncompleteId = elements.find(({ resourceTags }) => resourceTags.some(({ appType, tag }) => appType === 'todos' && tag === 'stage'))
       .elementData.predefinedCategories

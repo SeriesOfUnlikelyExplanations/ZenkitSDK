@@ -15,26 +15,16 @@ describe("Testing the skill", function() {
       .matchHeader('Authorization', 'key')
       .get('/api/v1/users/me/workspacesWithLists')
       .reply(200, zenkit.ZENKIT_WORKSPACE_DATA)
-      .post('/api/v1/workspaces/442548/lists')
+      .get(/\/api\/v1\/workspaces\/[[0-9]+\/lists/)
       .reply(200, zenkit.GET_LISTS_IN_WORKSPACE)
-      .post('/api/v1/workspaces/442026/lists')
-      .reply(200, zenkit.GET_LISTS_IN_WORKSPACE)
-      .get('/api/v1/lists/1225299/elements')
+      .get(/\/api\/v1\/lists\/[[0-9]+\/elements/)
       .reply(200, zenkit.ELEMENTS_DATA)
-      .get('/api/v1/lists/1263156/elements')
-      .reply(200, zenkit.ELEMENTS_DATA)
-      .get('/api/v1/lists/1347812/elements')
-      .reply(200, zenkit.ELEMENTS_DATA)
-      .get('/api/v1/lists/1067607/elements')
-      .reply(200, zenkit.ELEMENTS_DATA)
-      .post('/api/v1/lists/1225299/entries/filter')
-      .reply(200, zenkit.TODO_ENTRIES_DATA)
-      .post('/api/v1/lists/1067607/entries/filter')
-      .reply(200, zenkit.TODO_ENTRIES_DATA)
       .post('/api/v1/lists/1263156/entries/filter')
       .reply(200, zenkit.SHOPPING_ENTRIES_DATA)
       .post('/api/v1/lists/1347812/entries/filter')
       .reply(200, zenkit.CUSTOM_ENTRIES_DATA)
+      .post(/\/api\/v1\/lists\/[[0-9]+\/entries\/filter/)
+      .reply(200, zenkit.TODO_ENTRIES_DATA)
       .post('/api/v1/lists/1263156/entries')
       .reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY)
       .post('/api/v1/lists/1347812/entries')
@@ -45,6 +35,16 @@ describe("Testing the skill", function() {
       .matchHeader('Zenkit-API-Key', 'key')
       .get('/api/v1/users/me/workspacesWithLists')
       .reply(200, zenkit.ZENKIT_WORKSPACE_DATA)
+      .get(/\/api\/v1\/workspaces\/[[0-9]+\/lists/)
+      .reply(200, zenkit.GET_LISTS_IN_WORKSPACE)
+      .get(/\/api\/v1\/lists\/[[0-9]+\/elements/)
+      .reply(200, zenkit.ELEMENTS_DATA)
+      .post('/api/v1/lists/1263156/entries/filter')
+      .reply(200, zenkit.SHOPPING_ENTRIES_DATA)
+      .post('/api/v1/lists/1347812/entries/filter')
+      .reply(200, zenkit.CUSTOM_ENTRIES_DATA)
+      .post(/\/api\/v1\/lists\/[[0-9]+\/entries\/filter/)
+      .reply(200, zenkit.TODO_ENTRIES_DATA)
       
     nock.emitter.on("no match", (req) => {
       console.log(req.path)
@@ -108,7 +108,7 @@ describe("Testing the skill", function() {
       await expect(zenkitSDK.setDefaultWorkspace(1)).to.be.rejectedWith('Workspace ID - 1 - does not exist')
     });
     
-    it('getListsInWorkspace', async () => {
+    it('getListsInWorkspace - happy path', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       const Lists = await zenkitSDK.getListsInWorkspace();
       expect(Lists).to.be.instanceof(Object);
@@ -121,6 +121,28 @@ describe("Testing the skill", function() {
       expect(Lists).to.be.instanceof(Object);
       expect(Object.keys(Lists)).to.have.length(1);
     });
+    it('getListDetails - happy path', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      const List = await zenkitSDK.getListDetails(1067607);
+      expect(List).to.be.instanceof(Object);
+      expect(List).to.have.all.keys(['id', 'uncompleteId', 'items','titleUuid','stageUuid', 'completeId']);
+    });
+    it('getListDetails - happy path with getworkpaces first', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await zenkitSDK.getListsInWorkspace();
+      const List = await zenkitSDK.getListDetails(1067607);
+      expect(List).to.be.instanceof(Object);
+      expect(List).to.have.all.keys(['inbox', 'name', 'shortId', 'workspaceId', 'id', 'uncompleteId', 'items','titleUuid','stageUuid', 'completeId']);
+    });
+    it('getListDetails - base list', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { appType: 'base' });
+      await zenkitSDK.getListsInWorkspace();
+      const List = await zenkitSDK.getListDetails(1065931);
+      console.log(zenkitSDK.defaultWorkspace);
+      expect(List).to.be.instanceof(Object);
+      expect(List).to.have.all.keys(['inbox', 'name', 'shortId', 'workspaceId', 'id', 'uncompleteId', 'items','titleUuid','stageUuid', 'completeId']);
+    });
+    
      
     xit('Try to trigger Zenkit --> Alexa sync with no to-do workspace', async() => {
       var ctx = context();

@@ -192,7 +192,7 @@ const WORKSPACE_DATA = [{
     "id": 442026,
     "shortId": "IL2-MkvVuJ",
     "uuid": "9e58539a-13e1-48e2-b146-7ff053452ed8",
-    "name": "My Workspace", //extra workspace - shouldn't match to anything...
+    "name": "My Workspace",
     "description": null,
     "created_at": "2020-04-07T14:12:21.236Z",
     "updated_at": "2020-05-01T12:29:42.780Z",
@@ -222,7 +222,7 @@ const WORKSPACE_DATA = [{
       "uuid": "d94b6f8a-a0a7-4ca5-8e40-3aca02e589df",
       "workspaceId": 442026,
       "backgroundId": null,
-      "name": "test 1", //extra list - shouldn't match to anything...
+      "name": "test 1", 
       "itemName": null,
       "itemNamePlural": null,
       "description": "",
