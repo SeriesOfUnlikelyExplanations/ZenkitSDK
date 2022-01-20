@@ -45,8 +45,13 @@ class ZenkitSDK {
     if (!this.workspaces) {
       await this.getWorkspaces()
     }
-    this.defaultWorkspace = this.workspaces.find(({ id }) => id === workspaceId);
-    this.defaultWorkspaceId = this.defaultWorkspace.id
+    const workspace = this.workspaces.find(({ id }) => id === workspaceId);
+    if (typeof workspace == 'undefined') {
+      throw(`Workspace ID - ${workspaceId} - does not exist`)
+    }
+    this.defaultWorkspace = workspace;
+    this.defaultWorkspaceId = workspace.id;
+    return workspace;
   }
 
   /**
@@ -62,7 +67,7 @@ class ZenkitSDK {
     }
     const workspace = this.workspaces.find(({ id }) => id === workspaceId);
     if (typeof workspace === 'undefined') {
-      return null
+      throw(`Workspace ID - ${workspaceId} - does not exist`)
     }
     this.ListsInWorkspace = {};
     workspace.lists.forEach(list =>

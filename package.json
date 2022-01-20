@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "deploy-test":"nyc mocha",
+    "deploy-test": "nyc mocha",
     "run": "node tests/manualTest.js"
   },
-    "devDependencies": {
+  "devDependencies": {
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "mocha": "^9.1.3",
     "nock": "^12.0.3",
     "nyc": "^15.1.0"

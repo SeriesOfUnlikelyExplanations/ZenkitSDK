@@ -1,5 +1,7 @@
 var assert = require('assert');
-var expect = require('chai').expect;
+var chai = require('chai');
+var expect = chai.expect;
+chai.use(require('chai-as-promised'))
 const nock = require('nock');
 var ZenkitSDK = require('../index');
 
@@ -101,8 +103,25 @@ describe("Testing the skill", function() {
       expect(zenkitSDK.defaultWorkspace.id).to.equal(442026);
       expect(zenkitSDK.defaultWorkspaceId).to.equal(442026);
     });
+    it('setDefaultWorkspace - bad workspaceId', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await expect(zenkitSDK.setDefaultWorkspace(1)).to.be.rejectedWith('Workspace ID - 1 - does not exist')
+    });
     
-    
+    it('getListsInWorkspace', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      const Lists = await zenkitSDK.getListsInWorkspace();
+      expect(Lists).to.be.instanceof(Object);
+      expect(Object.keys(Lists)).to.have.length(5);
+      expect(Lists[Object.keys(Lists)[0]]).to.have.keys(['id', 'name', 'shortId', 'workspaceId', 'inbox']);
+    });
+    it('getListsInWorkspace - with provided workspace ID', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      const Lists = await zenkitSDK.getListsInWorkspace(442026);
+      expect(Lists).to.be.instanceof(Object);
+      expect(Object.keys(Lists)).to.have.length(1);
+    });
+     
     xit('Try to trigger Zenkit --> Alexa sync with no to-do workspace', async() => {
       var ctx = context();
       nock('https://todo.zenkit.com:443')
