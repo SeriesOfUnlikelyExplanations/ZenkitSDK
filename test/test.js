@@ -246,8 +246,7 @@ describe("Testing the skill", function() {
           expect(body['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_textType']).to.equal('plain');
           expect(body.uuid.length).to.equal(36);
           return body
-        })
-        .reply(200, zenkit.TODO_ENTRIES_DATA)
+        }).reply(200, zenkit.TODO_ENTRIES_DATA)
         
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       await zenkitSDK.getListDetails(1065931);
@@ -263,6 +262,19 @@ describe("Testing the skill", function() {
       await expect(zenkitSDK.addItem(1065931, 'todo item one')).to.be
         .rejectedWith('Missing list metadata - have you run getListDetails() or updateListDetails()')
     });
-    
+    it('deleteItem - happy path', async () => {
+      deleteNock = nock('https://todo.zenkit.com')
+        .post('/api/v1/lists/12345/entries/delete/filter', (body) => {
+          expect(body.shouldDeleteAll).to.be.false;
+          expect(body.filter).to.be.instanceof(Object);
+          expect(body.listEntryUuids).to.be.instanceof(Array);
+          expect(body.listEntryUuids).to.contain('testUUID');
+          return body
+        }).reply(200, {})
+        
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      const List = await zenkitSDK.deleteItem(12345, 'testUUID');
+      expect(deleteNock).to.have.been.requested
+    });
   });
 });
