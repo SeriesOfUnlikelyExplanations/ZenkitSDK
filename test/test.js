@@ -276,5 +276,24 @@ describe("Testing the skill", function() {
       const List = await zenkitSDK.deleteItem(12345, 'testUUID');
       expect(deleteNock).to.have.been.requested
     });
+    it('deleteItem - item doesnt exist', async () => {
+      deleteNock = nock('https://todo.zenkit.com')
+        .post('/api/v1/lists/12345/entries/delete/filter', (body) => {
+          expect(body.shouldDeleteAll).to.be.false;
+          expect(body.filter).to.be.instanceof(Object);
+          expect(body.listEntryUuids).to.be.instanceof(Array);
+          expect(body.listEntryUuids).to.contain('testUUID');
+          return body
+        }).reply(404, {"error":{
+          "name":"Resource not found",
+          "code":"C2",
+          "statusCode":404,
+          "message":"This collection does not exist or has been deleted.",
+          "description":"This collection does not exist or has been deleted."
+        }});
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await expect(zenkitSDK.deleteItem(12345, 'testUUID')).to.be
+        .rejectedWith('statusCode=404');
+    });
   });
 });
