@@ -195,14 +195,14 @@ class ZenkitSDK {
   * @param  {String}  itemUuid
   * @return {Promise}
   */
-  deleteItem(listId, itemUuid) {
+  async deleteItem(listId, itemUuid) {
    const scope = 'lists/' + listId + '/entries/delete/filter';
    const parameters = {
      'shouldDeleteAll': false,
      'filter': {},
      'listEntryUuids': [itemUuid]
    };
-   return this.handleRequest(scope, 'POST', parameters);
+   return await this.handleRequest(scope, 'POST', parameters);
   }
 
   /**
@@ -213,13 +213,16 @@ class ZenkitSDK {
    * @param  {Int}  statusId
    * @return {Promise}
    */
-  completeItem(listId, entryId) {
+  async completeItem(listId, entryId) {
+    if (!(listId in this.ListsInWorkspace) || !('stageUuid' in this.ListsInWorkspace[listId])) {
+      throw('Missing list metadata - have you run getListDetails() or updateListDetails()');
+    }
     const scope = 'lists/' + listId + '/entries/' + entryId;
     const parameters = {
       "updateAction": "replace",
       [this.ListsInWorkspace[listId].stageUuid + "_categories"]: [this.ListsInWorkspace[listId].completeId]
     };
-    return this.handleRequest(scope, 'PUT', parameters);
+    return await this.handleRequest(scope, 'PUT', parameters);
   }
   
   /**
@@ -230,13 +233,16 @@ class ZenkitSDK {
    * @param  {Int}  statusId
    * @return {Promise}
    */
-  uncompleteItem(listId, entryId) {
+  async uncompleteItem(listId, entryId) {
+    if (!(listId in this.ListsInWorkspace) || !('stageUuid' in this.ListsInWorkspace[listId])) {
+      throw('Missing list metadata - have you run getListDetails() or updateListDetails()');
+    }
     const scope = 'lists/' + listId + '/entries/' + entryId;
     const parameters = {
       "updateAction": "replace",
       [this.ListsInWorkspace[listId].stageUuid + "_categories"]: [this.ListsInWorkspace[listId].uncompleteId]
     };
-    return this.handleRequest(scope, 'PUT', parameters);
+    return await this.handleRequest(scope, 'PUT', parameters);
   }
 
   /**
@@ -247,13 +253,13 @@ class ZenkitSDK {
    * @param  {String} value
    * @return {Promise}
    */
-  updateItemTitle(listId, entryId, value) {
+  async updateItemTitle(listId, entryId, value) {
     const scope = 'lists/' + listId + '/entries/' + entryId;
     const parameters = {
       "updateAction": "replace",
       [this.ListsInWorkspace[listId].titleUuid + '_text']: value
     };
-    return this.handleRequest(scope, 'PUT', parameters);
+    return await this.handleRequest(scope, 'PUT', parameters);
   }
 
   /**

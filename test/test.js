@@ -320,8 +320,12 @@ describe("Testing the skill", function() {
       await zenkitSDK.getListDetails(1065931);
       const response = await zenkitSDK.completeItem(1065931, 88);
       expect(response).to.be.instanceof(Object);
-      expect(response.id).to.equal(88);;
+      expect(response.id).to.equal(88);
     });
-    
+    it('completeItem - happy path', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await expect(zenkitSDK.completeItem(1065931, 88)).to.be
+        .rejectedWith('Missing list metadata - have you run getListDetails() or updateListDetails()');
+    });
   });
 });
