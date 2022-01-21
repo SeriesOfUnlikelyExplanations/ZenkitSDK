@@ -142,12 +142,42 @@ describe("Testing the skill", function() {
       const zenkitSDK = new ZenkitSDK('key', { appType: 'base' });
       await zenkitSDK.getListsInWorkspace();
       const List = await zenkitSDK.getListDetails(1065931);
-      console.log(zenkitSDK.defaultWorkspace);
       expect(List).to.be.instanceof(Object);
       expect(List).to.have.all.keys(['inbox', 'name', 'shortId', 'workspaceId', 'id', 'uncompleteId', 'items','titleUuid','stageUuid', 'completeId']);
     });
-    
+    it('updateListDetails - happy path', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      const params = {
+        titleUuid: 'title1',
+        uncompleteId: 'uncomplete1',
+        completeId: 'complete1',
+        stageUuid: 'stage1'
+      }
+      const List = await zenkitSDK.updateListDetails(1, params);
+      expect(List).to.be.instanceof(Object);
+      expect(List).to.have.all.keys(['titleUuid', 'uncompleteId','completeId','stageUuid']); 
+      expect(List.titleUuid).to.equal('title1');
+      expect(List.completeId).to.equal('complete1');
+    });
      
+    it('updateListDetails - happy path existing list', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await zenkitSDK.getListsInWorkspace();
+      const params = {
+        titleUuid: 'title1',
+        uncompleteId: 'uncomplete1',
+        completeId: 'complete1',
+        stageUuid: 'stage1'
+      }
+      const List = await zenkitSDK.updateListDetails(1067607, params);
+      expect(List).to.be.instanceof(Object);
+      expect(List).to.have.all.keys(['inbox', 'name', 'shortId', 'workspaceId', 'id', 'uncompleteId', 'titleUuid','stageUuid', 'completeId']); 
+      expect(List.titleUuid).to.equal('title1');
+      expect(List.completeId).to.equal('complete1');
+    });
+    
+    
+    
     xit('Try to trigger Zenkit --> Alexa sync with no to-do workspace', async() => {
       var ctx = context();
       nock('https://todo.zenkit.com:443')
