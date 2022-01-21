@@ -145,7 +145,6 @@ class ZenkitSDK {
     }
     const lists = await this.handleRequest('workspaces/' + workspaceId + '/lists', 'POST', {name: listName})
     const list = lists.find(({ name }) => name == listName)
-    console.log(list);
     this.ListsInWorkspace[list.id] = {
         id: list.id,
         name: list.name,
@@ -170,20 +169,24 @@ class ZenkitSDK {
   * Add item to list
   * @param  {int}  listId
   * @param  {String}  titleUuid
-  * @param  {String}  value
+  * @param  {String}  itemName
   * @return {Promise}
   */
-  async addItem(listId, value) {
+  async addItem(listId, itemName) {
+    if (!('titleUuid' in this.ListsInWorkspace[listId])) {
+      throw('Missing list metadata - have you run getListDetails() or updateListDetails()');
+    }
     const scope = 'lists/' + listId + '/entries';
     const parameters = {
-      'uuid': randomUUID(),
-      'sortOrder': 'lowest',
-      'displayString': value,
-      [this.ListsInWorkspace[listId].titleUuid + '_text']: value,
-      [this.ListsInWorkspace[listId].titleUuid + '_searchText']: value,
+      uuid: randomUUID(),
+      sortOrder: 'lowest',
+      displayString: itemName,
+      [this.ListsInWorkspace[listId].titleUuid + '_text']: itemName,
+      [this.ListsInWorkspace[listId].titleUuid + '_searchText']: itemName,
       [this.ListsInWorkspace[listId].titleUuid + '_textType']: 'plain'
     };
-    return this.handleRequest(scope, 'POST', parameters);
+    this.ListsInWorkspace[listId].items = await this.handleRequest(scope, 'POST', parameters);
+    return this.ListsInWorkspace[listId].items.find(({displayString}) => displayString === itemName)
   }
 
   /**

@@ -222,7 +222,7 @@ describe("Testing the skill", function() {
       expect(List.name).to.equal('custom list');
       expect(List.shortId).to.equal('AqIriYzgs');
     });
-     it('deleteList - happy path', async () => {
+    it('deleteList - happy path', async () => {
       deleteNock = nock('https://todo.zenkit.com')
         .delete('/api/v1/lists/12345')
         .reply(200, zenkit.GET_LISTS_IN_WORKSPACE)
@@ -231,6 +231,34 @@ describe("Testing the skill", function() {
       const List = await zenkitSDK.deleteList(12345);
       expect(deleteNock).to.have.been.requested
     });
+    it('addItem - happy path', async () => {
+      createItemNock = nock('https://todo.zenkit.com')
+        .post(/\/api\/v1\/lists\/[[0-9]+\/entries/, (body) => {
+          expect(body).to.be.instanceof(Object);
+          expect(body).to.have.all.keys(['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_searchText', 
+            'bdbcc0f2-9dda-4381-8dd7-05b782dd6722_text', 
+            'bdbcc0f2-9dda-4381-8dd7-05b782dd6722_textType', 
+            'displayString', 'sortOrder', 'uuid']);
+          expect(body.sortOrder).to.equal('lowest');
+          expect(body.displayString).to.equal('todo item one');
+          expect(body['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_searchText']).to.equal('todo item one');
+          expect(body['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_text']).to.equal('todo item one');
+          expect(body['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_textType']).to.equal('plain');
+          expect(body.uuid.length).to.equal(36);
+          return body
+        })
+        .reply(200, zenkit.TODO_ENTRIES_DATA)
+        
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await zenkitSDK.getListDetails(1065931);
+      const item = await zenkitSDK.addItem(1065931, 'todo item one');
+      expect(createItemNock).to.have.been.requested;
+      expect(item).to.be.instanceof(Object);
+      expect(item.displayString).to.equal('todo item one');
+      expect(item['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_searchText']).to.equal('todo item one');
+      expect(item['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_text']).to.equal('todo item one');
+    });
+    
     
   });
 });
