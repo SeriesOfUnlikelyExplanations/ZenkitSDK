@@ -130,6 +130,12 @@ describe("Testing the skill", function() {
       const List = await zenkitSDK.getListDetails(1067607);
       expect(List).to.be.instanceof(Object);
       expect(List).to.have.all.keys(['id', 'uncompleteId', 'items','titleUuid','stageUuid', 'completeId']);
+      expect(List.id).to.equal(1067607);
+      expect(List.uncompleteId).to.equal(6155581);
+      expect(List.completeId).to.equal(6155582);
+      expect(List.items).to.be.instanceof(Array);
+      expect(List.items).to.to.have.length(1);
+      expect(List.stageUuid).to.equal('e4e56aaa-f1d2-4243-921e-25c87b1060e6');
     });
     it('getListDetails - happy path with getworkpaces first', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
@@ -137,6 +143,15 @@ describe("Testing the skill", function() {
       const List = await zenkitSDK.getListDetails(1067607);
       expect(List).to.be.instanceof(Object);
       expect(List).to.have.all.keys(['inbox', 'name', 'shortId', 'workspaceId', 'id', 'uncompleteId', 'items','titleUuid','stageUuid', 'completeId']);
+      expect(List.id).to.equal(1067607);
+      expect(List.uncompleteId).to.equal(6155581);
+      expect(List.completeId).to.equal(6155582);
+      expect(List.items).to.be.instanceof(Array);
+      expect(List.items).to.to.have.length(1);
+      expect(List.stageUuid).to.equal('e4e56aaa-f1d2-4243-921e-25c87b1060e6');
+      expect(List.inbox).to.equal(true);
+      expect(List.name).to.equal('Inbox');
+      expect(List.shortId).to.equal('N4uKj7EcZw');
     });
     it('getListDetails - base list', async () => {
       const zenkitSDK = new ZenkitSDK('key', { appType: 'base' });
@@ -144,6 +159,15 @@ describe("Testing the skill", function() {
       const List = await zenkitSDK.getListDetails(1065931);
       expect(List).to.be.instanceof(Object);
       expect(List).to.have.all.keys(['inbox', 'name', 'shortId', 'workspaceId', 'id', 'uncompleteId', 'items','titleUuid','stageUuid', 'completeId']);
+      expect(List.id).to.equal(1065931);
+      expect(List.uncompleteId).to.equal(6155581);
+      expect(List.completeId).to.equal(6155582);
+      expect(List.items).to.be.instanceof(Array);
+      expect(List.items).to.to.have.length(1);
+      expect(List.stageUuid).to.equal('e4e56aaa-f1d2-4243-921e-25c87b1060e6');
+      expect(List.inbox).to.equal(false);
+      expect(List.name).to.equal('test 1');
+      expect(List.shortId).to.equal('c4_XaKEb4k');
     });
     it('updateListDetails - happy path', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
@@ -158,8 +182,7 @@ describe("Testing the skill", function() {
       expect(List).to.have.all.keys(['titleUuid', 'uncompleteId','completeId','stageUuid']); 
       expect(List.titleUuid).to.equal('title1');
       expect(List.completeId).to.equal('complete1');
-    });
-     
+    }); 
     it('updateListDetails - happy path existing list', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       await zenkitSDK.getListsInWorkspace();
@@ -175,34 +198,27 @@ describe("Testing the skill", function() {
       expect(List.titleUuid).to.equal('title1');
       expect(List.completeId).to.equal('complete1');
     });
-    
-    
-    
-    xit('Try to trigger Zenkit --> Alexa sync with no to-do workspace', async() => {
-      var ctx = context();
-      nock('https://todo.zenkit.com:443')
-        .post('/api/v1/lists/1225299/entries', (body) => {
-            console.log('todo item two created in zenkit');
-            expect(body.sortOrder).to.equal('lowest');
-            expect(body.displayString).to.equal('todo item two');
-            expect(body['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_text']).to.equal('todo item two');
-            expect(body['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_searchText']).to.equal('todo item two');
-            expect(body['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_textType']).to.equal('plain');
+    it('createList - happy path', async () => {
+      nock('https://todo.zenkit.com')
+        .post(/\/api\/v1\/workspaces\/[[0-9]+\/lists/, (body) => {
+            expect(body.name).to.equal('custom list');
             return body
         })
-        .reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY)
-
-      zenkitNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA_NO_TODO;
-
-      index.handler(req.SYNC_MESSAGE_RECEIVED, ctx, (err, data) => { })
-      await ctx.Promise
-        .then(() => {
-          console.log('created new item - Success!');
-        })
-        .catch(err => {
-          assert(false, 'application failure:'.concat(err))
-        });
-      zenkitNock.interceptors.find(({ path }) => path == '/api/v1/users/me/workspacesWithLists').body = zenkit.ZENKIT_WORKSPACE_DATA;
+        .reply(200, zenkit.GET_LISTS_IN_WORKSPACE)
+        
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      const List = await zenkitSDK.createList('custom list');
+      expect(List).to.be.instanceof(Object);
+      expect(List).to.have.all.keys(['inbox', 'name', 'shortId', 'workspaceId', 'id', 'uncompleteId', 'items','titleUuid','stageUuid', 'completeId']);
+      expect(List.id).to.equal(1347812);
+      expect(List.uncompleteId).to.equal(6155581);
+      expect(List.completeId).to.equal(6155582);
+      expect(List.items).to.be.instanceof(Array);
+      expect(List.items).to.to.have.length(1);
+      expect(List.stageUuid).to.equal('e4e56aaa-f1d2-4243-921e-25c87b1060e6');
+      expect(List.inbox).to.equal(false);
+      expect(List.name).to.equal('custom list');
+      expect(List.shortId).to.equal('AqIriYzgs');
     });
   });
 });

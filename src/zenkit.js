@@ -136,9 +136,16 @@ class ZenkitSDK {
    * @param {string, null} stageUuid
    * @return {Promise}
    */
-  async createList(listName, workspaceId=this.defaultWorkspace.id) {
+  async createList(listName, workspaceId=null) {
+    if (!this.workspaces) {
+      await this.getWorkspaces()
+    }
+    if (!workspaceId) {
+      workspaceId = this.defaultWorkspaceId
+    }
     const lists = await this.handleRequest('workspaces/' + workspaceId + '/lists', 'POST', {name: listName})
     const list = lists.find(({ name }) => name == listName)
+    console.log(list);
     this.ListsInWorkspace[list.id] = {
         id: list.id,
         name: list.name,
