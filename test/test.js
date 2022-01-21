@@ -308,5 +308,20 @@ describe("Testing the skill", function() {
       const response = await zenkitSDK.deleteItem(12345, 'testUUID');
       expect(response).to.equal('test');
     });
+    it('completeItem - happy path', async () => {
+      deleteNock = nock('https://todo.zenkit.com')
+        .put('/api/v1/lists/1065931/entries/88', (body) => {
+          expect(body.updateAction).to.equal('replace');
+          expect(body['e4e56aaa-f1d2-4243-921e-25c87b1060e6_categories']).to.be.instanceof(Array);
+          expect(body['e4e56aaa-f1d2-4243-921e-25c87b1060e6_categories']).to.contain(6155582); //this is the complete id
+          return body
+        }).reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY);
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await zenkitSDK.getListDetails(1065931);
+      const response = await zenkitSDK.completeItem(1065931, 88);
+      expect(response).to.be.instanceof(Object);
+      expect(response.id).to.equal(88);;
+    });
+    
   });
 });
