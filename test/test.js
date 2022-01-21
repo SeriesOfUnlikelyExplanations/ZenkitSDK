@@ -121,6 +121,10 @@ describe("Testing the skill", function() {
       expect(Lists).to.be.instanceof(Object);
       expect(Object.keys(Lists)).to.have.length(1);
     });
+    it('getListsInWorkspace - bad workspace ID', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await expect(zenkitSDK.getListsInWorkspace(1)).to.be.rejectedWith('Workspace ID - 1 - does not exist')
+    });
     it('getListDetails - happy path', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       const List = await zenkitSDK.getListDetails(1067607);
