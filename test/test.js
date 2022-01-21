@@ -258,7 +258,11 @@ describe("Testing the skill", function() {
       expect(item['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_searchText']).to.equal('todo item one');
       expect(item['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_text']).to.equal('todo item one');
     });
-    
+    it('addItem - list details not available', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await expect(zenkitSDK.addItem(1065931, 'todo item one')).to.be
+        .rejectedWith('Missing list metadata - have you run getListDetails() or updateListDetails()')
+    });
     
   });
 });

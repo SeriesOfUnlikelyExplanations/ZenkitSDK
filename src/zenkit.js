@@ -173,7 +173,7 @@ class ZenkitSDK {
   * @return {Promise}
   */
   async addItem(listId, itemName) {
-    if (!('titleUuid' in this.ListsInWorkspace[listId])) {
+    if (!(listId in this.ListsInWorkspace) || !('titleUuid' in this.ListsInWorkspace[listId])) {
       throw('Missing list metadata - have you run getListDetails() or updateListDetails()');
     }
     const scope = 'lists/' + listId + '/entries';
