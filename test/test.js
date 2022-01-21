@@ -273,7 +273,7 @@ describe("Testing the skill", function() {
         }).reply(200, {})
         
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
-      const List = await zenkitSDK.deleteItem(12345, 'testUUID');
+      const response = await zenkitSDK.deleteItem(12345, 'testUUID');
       expect(deleteNock).to.have.been.requested
     });
     it('deleteItem - item doesnt exist', async () => {
@@ -294,6 +294,19 @@ describe("Testing the skill", function() {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       await expect(zenkitSDK.deleteItem(12345, 'testUUID')).to.be
         .rejectedWith('statusCode=404');
+    });
+    it('deleteItem - non-JSON response (unlikely to happen)', async () => {
+      deleteNock = nock('https://todo.zenkit.com')
+        .post('/api/v1/lists/12345/entries/delete/filter', (body) => {
+          expect(body.shouldDeleteAll).to.be.false;
+          expect(body.filter).to.be.instanceof(Object);
+          expect(body.listEntryUuids).to.be.instanceof(Array);
+          expect(body.listEntryUuids).to.contain('testUUID');
+          return body
+        }).reply(200, 'test');
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      const response = await zenkitSDK.deleteItem(12345, 'testUUID');
+      expect(response).to.equal('test');
     });
   });
 });

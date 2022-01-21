@@ -300,11 +300,7 @@ class ZenkitSDK {
           try {
             body = JSON.parse(Buffer.concat(body).toString());
           } catch(e) {
-            try {
-              body = Buffer.concat(body).toString();
-            } catch(e) {
-              reject(e);
-            }
+            body = Buffer.concat(body).toString();
           }
           if (res.statusCode < 200 || res.statusCode >= 300) {
             console.log(body);
