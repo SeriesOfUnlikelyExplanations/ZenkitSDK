@@ -1,7 +1,8 @@
 var assert = require('assert');
 var chai = require('chai');
+chai.use(require('chai-nock'));
+chai.use(require('chai-as-promised'));
 var expect = chai.expect;
-chai.use(require('chai-as-promised'))
 const nock = require('nock');
 var ZenkitSDK = require('../index');
 
@@ -199,7 +200,7 @@ describe("Testing the skill", function() {
       expect(List.completeId).to.equal('complete1');
     });
     it('createList - happy path', async () => {
-      nock('https://todo.zenkit.com')
+      createListNock = nock('https://todo.zenkit.com')
         .post(/\/api\/v1\/workspaces\/[[0-9]+\/lists/, (body) => {
             expect(body.name).to.equal('custom list');
             return body
@@ -208,6 +209,7 @@ describe("Testing the skill", function() {
         
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       const List = await zenkitSDK.createList('custom list');
+      expect(createListNock).to.have.been.requested;
       expect(List).to.be.instanceof(Object);
       expect(List).to.have.all.keys(['inbox', 'name', 'shortId', 'workspaceId', 'id', 'uncompleteId', 'items','titleUuid','stageUuid', 'completeId']);
       expect(List.id).to.equal(1347812);
@@ -220,5 +222,15 @@ describe("Testing the skill", function() {
       expect(List.name).to.equal('custom list');
       expect(List.shortId).to.equal('AqIriYzgs');
     });
+     it('deleteList - happy path', async () => {
+      deleteNock = nock('https://todo.zenkit.com')
+        .delete('/api/v1/lists/12345')
+        .reply(200, zenkit.GET_LISTS_IN_WORKSPACE)
+        
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      const List = await zenkitSDK.deleteList(12345);
+      expect(deleteNock).to.have.been.requested
+    });
+    
   });
 });

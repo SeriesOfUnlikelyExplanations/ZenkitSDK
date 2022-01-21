@@ -260,14 +260,19 @@ class ZenkitSDK {
    //~ * @param  {Object} parameters
    //~ * @return {Promise}
    //~ */
-  async handleRequest(scope, method = 'GET', parameters = {}) {
-    // Define request options
+  async handleRequest(scope, method = 'GET', parameters = {}, queryParameters = {}) {
+    //~ Zenkit doesn't use querystrings
     //~ queryParameters.ie = (new Date()).getTime();
     //~ queryParameters.show_archived = false
+    var queryString = '';
+    //~ if (Object.entries(queryParameters).length > 0) {
+      //~ queryString = `?${querystring.stringify(queryParameters)}`;
+    //~ }
+    // Define request options
     var options = {
       hostname: this.host,
       port: 443,
-      path: `/${this.apiScope}/${scope}`,
+      path: `/${this.apiScope}/${scope}${queryString}`,
       method: method,
       headers: {
         'Cache-Control':'no-cache',
