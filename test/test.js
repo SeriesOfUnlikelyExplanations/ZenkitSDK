@@ -94,7 +94,8 @@ describe("Testing the skill", function() {
         new ZenkitSDK('key', { keyType: 'blah'});
       }).to.throw('keyType - blah - not supported');
     });
-    it('setDefaultWorkspace', async () => {
+    
+    it('setDefaultWorkspace - happy path', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       await zenkitSDK.setDefaultWorkspace(442026);
       expect(zenkitSDK.workspaces).to.be.instanceof(Array);
@@ -126,6 +127,7 @@ describe("Testing the skill", function() {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       await expect(zenkitSDK.getListsInWorkspace(1)).to.be.rejectedWith('Workspace ID - 1 - does not exist')
     });
+    
     it('getListDetails - happy path', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       const List = await zenkitSDK.getListDetails(1067607);
@@ -170,6 +172,7 @@ describe("Testing the skill", function() {
       expect(List.name).to.equal('test 1');
       expect(List.shortId).to.equal('c4_XaKEb4k');
     });
+    
     it('updateListDetails - happy path', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       const params = {
@@ -199,6 +202,7 @@ describe("Testing the skill", function() {
       expect(List.titleUuid).to.equal('title1');
       expect(List.completeId).to.equal('complete1');
     });
+    
     it('createList - happy path', async () => {
       createListNock = nock('https://todo.zenkit.com')
         .post(/\/api\/v1\/workspaces\/[[0-9]+\/lists/, (body) => {
@@ -231,6 +235,7 @@ describe("Testing the skill", function() {
       const List = await zenkitSDK.deleteList(12345);
       expect(deleteNock).to.have.been.requested
     });
+    
     it('addItem - happy path', async () => {
       createItemNock = nock('https://todo.zenkit.com')
         .post(/\/api\/v1\/lists\/[[0-9]+\/entries/, (body) => {
@@ -262,6 +267,7 @@ describe("Testing the skill", function() {
       await expect(zenkitSDK.addItem(1065931, 'todo item one')).to.be
         .rejectedWith('Missing list metadata - have you run getListDetails() or updateListDetails()')
     });
+    
     it('deleteItem - happy path', async () => {
       deleteNock = nock('https://todo.zenkit.com')
         .post('/api/v1/lists/12345/entries/delete/filter', (body) => {
@@ -308,6 +314,7 @@ describe("Testing the skill", function() {
       const response = await zenkitSDK.deleteItem(12345, 'testUUID');
       expect(response).to.equal('test');
     });
+    
     it('completeItem - happy path', async () => {
       deleteNock = nock('https://todo.zenkit.com')
         .put('/api/v1/lists/1065931/entries/88', (body) => {
@@ -322,10 +329,50 @@ describe("Testing the skill", function() {
       expect(response).to.be.instanceof(Object);
       expect(response.id).to.equal(88);
     });
-    it('completeItem - happy path', async () => {
+    it('completeItem - list details not available', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       await expect(zenkitSDK.completeItem(1065931, 88)).to.be
         .rejectedWith('Missing list metadata - have you run getListDetails() or updateListDetails()');
     });
+    
+    it('uncompleteItem - happy path', async () => {
+      deleteNock = nock('https://todo.zenkit.com')
+        .put('/api/v1/lists/1065931/entries/88', (body) => {
+          expect(body.updateAction).to.equal('replace');
+          expect(body['e4e56aaa-f1d2-4243-921e-25c87b1060e6_categories']).to.be.instanceof(Array);
+          expect(body['e4e56aaa-f1d2-4243-921e-25c87b1060e6_categories']).to.contain(6155581); //this is the complete id
+          return body
+        }).reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY);
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await zenkitSDK.getListDetails(1065931);
+      const response = await zenkitSDK.uncompleteItem(1065931, 88);
+      expect(response).to.be.instanceof(Object);
+      expect(response.id).to.equal(88);
+    });
+    it('uncompleteItem - list details not available', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await expect(zenkitSDK.uncompleteItem(1065931, 88)).to.be
+        .rejectedWith('Missing list metadata - have you run getListDetails() or updateListDetails()');
+    });
+    
+    it('updateItemTitle - happy path', async () => {
+      deleteNock = nock('https://todo.zenkit.com')
+        .put('/api/v1/lists/1065931/entries/88', (body) => {
+          expect(body.updateAction).to.equal('replace');
+          expect(body['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_text']).to.equal('test title'); //this is the complete id
+          return body
+        }).reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY);
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await zenkitSDK.getListDetails(1065931);
+      const response = await zenkitSDK.updateItemTitle(1065931, 88, 'test title');
+      expect(response).to.be.instanceof(Object);
+      expect(response.id).to.equal(88);
+    });
+    it('uncompleteItem - list details not available', async () => {
+      const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
+      await expect(zenkitSDK.updateItemTitle(1065931, 88, 'test title')).to.be
+        .rejectedWith('Missing list metadata - have you run getListDetails() or updateListDetails()');
+    });
+    
   });
 });

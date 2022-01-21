@@ -198,9 +198,9 @@ class ZenkitSDK {
   async deleteItem(listId, itemUuid) {
    const scope = 'lists/' + listId + '/entries/delete/filter';
    const parameters = {
-     'shouldDeleteAll': false,
-     'filter': {},
-     'listEntryUuids': [itemUuid]
+     shouldDeleteAll: false,
+     filter: {},
+     listEntryUuids: [itemUuid]
    };
    return await this.handleRequest(scope, 'POST', parameters);
   }
@@ -219,7 +219,7 @@ class ZenkitSDK {
     }
     const scope = 'lists/' + listId + '/entries/' + entryId;
     const parameters = {
-      "updateAction": "replace",
+      updateAction: "replace",
       [this.ListsInWorkspace[listId].stageUuid + "_categories"]: [this.ListsInWorkspace[listId].completeId]
     };
     return await this.handleRequest(scope, 'PUT', parameters);
@@ -239,7 +239,7 @@ class ZenkitSDK {
     }
     const scope = 'lists/' + listId + '/entries/' + entryId;
     const parameters = {
-      "updateAction": "replace",
+      updateAction: "replace",
       [this.ListsInWorkspace[listId].stageUuid + "_categories"]: [this.ListsInWorkspace[listId].uncompleteId]
     };
     return await this.handleRequest(scope, 'PUT', parameters);
@@ -254,9 +254,12 @@ class ZenkitSDK {
    * @return {Promise}
    */
   async updateItemTitle(listId, entryId, value) {
+    if (!(listId in this.ListsInWorkspace) || !('stageUuid' in this.ListsInWorkspace[listId])) {
+      throw('Missing list metadata - have you run getListDetails() or updateListDetails()');
+    }
     const scope = 'lists/' + listId + '/entries/' + entryId;
     const parameters = {
-      "updateAction": "replace",
+      updateAction: "replace",
       [this.ListsInWorkspace[listId].titleUuid + '_text']: value
     };
     return await this.handleRequest(scope, 'PUT', parameters);
