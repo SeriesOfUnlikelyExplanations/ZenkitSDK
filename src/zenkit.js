@@ -12,7 +12,7 @@ class ZenkitSDK {
    * @param {String} key
    */
   constructor(key, { keyType = 'Zenkit-API-Key', appType = 'todo', apiScope = 'api/v1' }) {
-    if (!['base','todo'].includes(appType)) {
+    if (!['base','todo','hypernotes','project'].includes(appType)) {
       throw(`appType - ${appType} - not supported`);
     }
     if (!['Zenkit-API-Key','Authorization'].includes(keyType)) {
@@ -192,15 +192,15 @@ class ZenkitSDK {
   /**
   * Delete item from list
   * @param  {int}  listId
-  * @param  {String}  itemUuid
+  * @param  {String}  itemId
   * @return {Promise}
   */
-  async deleteItem(listId, itemUuid) {
+  async deleteItem(listId, itemId) {
    const scope = 'lists/' + listId + '/entries/delete/filter';
    const parameters = {
      shouldDeleteAll: false,
      filter: {},
-     listEntryUuids: [itemUuid]
+     listEntryUuids: [itemId]
    };
    return await this.handleRequest(scope, 'POST', parameters);
   }
@@ -208,16 +208,16 @@ class ZenkitSDK {
   /**
    * update the "complete" status of an item
    * @param  {int}  listId
-   * @param  {Int}  entryId
+   * @param  {Int}  itemId
    * @param  {String} stageUuid
    * @param  {Int}  statusId
    * @return {Promise}
    */
-  async completeItem(listId, entryId) {
+  async completeItem(listId, itemId) {
     if (!(listId in this.ListsInWorkspace) || !('stageUuid' in this.ListsInWorkspace[listId])) {
       throw('Missing list metadata - have you run getListDetails() or updateListDetails()');
     }
-    const scope = 'lists/' + listId + '/entries/' + entryId;
+    const scope = 'lists/' + listId + '/entries/' + itemId;
     const parameters = {
       updateAction: "replace",
       [this.ListsInWorkspace[listId].stageUuid + "_categories"]: [this.ListsInWorkspace[listId].completeId]
@@ -228,16 +228,16 @@ class ZenkitSDK {
   /**
    * update the "complete" status of an item
    * @param  {int}  listId
-   * @param  {Int}  entryId
+   * @param  {Int}  itemId
    * @param  {String} stageUuid
    * @param  {Int}  statusId
    * @return {Promise}
    */
-  async uncompleteItem(listId, entryId) {
+  async uncompleteItem(listId, itemId) {
     if (!(listId in this.ListsInWorkspace) || !('stageUuid' in this.ListsInWorkspace[listId])) {
       throw('Missing list metadata - have you run getListDetails() or updateListDetails()');
     }
-    const scope = 'lists/' + listId + '/entries/' + entryId;
+    const scope = 'lists/' + listId + '/entries/' + itemId;
     const parameters = {
       updateAction: "replace",
       [this.ListsInWorkspace[listId].stageUuid + "_categories"]: [this.ListsInWorkspace[listId].uncompleteId]
@@ -248,16 +248,16 @@ class ZenkitSDK {
   /**
    * Update Item Title
    * @param  {int}  listId
-   * @param  {Int}  entryId
+   * @param  {Int}  itemId
    * @param  {String} titleUuid
    * @param  {String} value
    * @return {Promise}
    */
-  async updateItemTitle(listId, entryId, value) {
+  async updateItemTitle(listId, itemId, value) {
     if (!(listId in this.ListsInWorkspace) || !('stageUuid' in this.ListsInWorkspace[listId])) {
       throw('Missing list metadata - have you run getListDetails() or updateListDetails()');
     }
-    const scope = 'lists/' + listId + '/entries/' + entryId;
+    const scope = 'lists/' + listId + '/entries/' + itemId;
     const parameters = {
       updateAction: "replace",
       [this.ListsInWorkspace[listId].titleUuid + '_text']: value
