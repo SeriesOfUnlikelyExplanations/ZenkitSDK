@@ -1,5 +1,5 @@
 {
-  "name": "ZenkitSDK",
+  "name": "zenkitsdk",
   "version": "1.0.1",
   "description": "An unofficial NodeJs client for Zenkit's API",
   "main": "index.js",
