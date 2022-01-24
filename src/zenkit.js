@@ -1,5 +1,4 @@
 const https = require('https');
-const querystring = require('querystring');
 const { randomUUID } = require('crypto');
 
 /**
@@ -122,11 +121,12 @@ class ZenkitSDK {
     if (!(listId in this.ListsInWorkspace)) {
       this.ListsInWorkspace[listId] = {};
     }
-    for (var [key, value] of Object.entries(listMetaData)) {
-      if (['titleUuid', 'uncompleteId','completeId','stageUuid'].includes(key)) {
-        this.ListsInWorkspace[listId][key] = value;
-      }
-    }
+    const { titleUuid, uncompleteId, completeId, stageUuid } = listMetaData;
+    this.ListsInWorkspace[listId].titleUuid = titleUuid;
+    this.ListsInWorkspace[listId].uncompleteId = uncompleteId;
+    this.ListsInWorkspace[listId].completeId = completeId;
+    this.ListsInWorkspace[listId].stageUuid = stageUuid;
+    
     return this.ListsInWorkspace[listId];
   }
 
@@ -278,7 +278,7 @@ class ZenkitSDK {
     //~ queryParameters.show_archived = false
     var queryString = '';
     //~ if (Object.entries(queryParameters).length > 0) {
-      //~ queryString = `?${querystring.stringify(queryParameters)}`;
+      //~ const queryString = `?${new URLSearchParams(queryParameters)}`;
     //~ }
     // Define request options
     var options = {

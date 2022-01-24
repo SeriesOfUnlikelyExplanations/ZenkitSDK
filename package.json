@@ -1,6 +1,6 @@
 {
   "name": "zenkitsdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An unofficial NodeJs client for Zenkit's API",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-nock": "^1.3.0",
-    "mocha": "^8.1.3",
+    "mocha": "^9.2.0",
     "nock": "^12.0.3",
     "nyc": "^15.1.0"
   },
