@@ -301,9 +301,7 @@ class ZenkitSDK {
     return new Promise(function(resolve, reject) {
       var req = https.request(options, function(res) {
         var body = [];
-        res.on('data', function(chunk) {
-          body.push(chunk);
-        });
+        res.on('data', (chunk) => { body.push(chunk); });
         res.on('end', function() {
           try {
             body = JSON.parse(Buffer.concat(body).toString());
@@ -317,9 +315,7 @@ class ZenkitSDK {
           resolve(body);
         });
       });
-      req.on('error', function(e) {
-        reject(e);
-      });
+      req.on('error', (e) => { reject(e); });
       if (Object.keys(parameters).length) {
         const paramString = JSON.stringify(parameters);
         req.write(paramString);
