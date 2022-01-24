@@ -16,8 +16,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Run tests
         run: |
-          npm install --production
+          npm install
           npm run deploy-test
+          rm -rf node_modules/
+          npm install --production
           
       - run: npm ci
       - run: npm publish
