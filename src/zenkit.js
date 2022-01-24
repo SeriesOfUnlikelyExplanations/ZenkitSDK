@@ -117,11 +117,10 @@ class ZenkitSDK {
   * @ return {Promise}
   */
   
-  updateListDetails(listId, listMetaData) {
+  updateListDetails(listId, { titleUuid, uncompleteId, completeId, stageUuid }) {
     if (!(listId in this.ListsInWorkspace)) {
       this.ListsInWorkspace[listId] = {};
     }
-    const { titleUuid, uncompleteId, completeId, stageUuid } = listMetaData;
     this.ListsInWorkspace[listId].titleUuid = titleUuid;
     this.ListsInWorkspace[listId].uncompleteId = uncompleteId;
     this.ListsInWorkspace[listId].completeId = completeId;
