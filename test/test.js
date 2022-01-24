@@ -11,24 +11,23 @@ const zenkit = require('./zenkitTestData.js');
 describe("Testing the skill", function() {
   this.timeout(4000);
   before(() => {
+    nock.cleanAll()
     todoNock = nock('https://todo.zenkit.com')
       .persist()
       .matchHeader('Authorization', 'key')
       .get('/api/v1/users/me/workspacesWithLists')
       .reply(200, zenkit.ZENKIT_WORKSPACE_DATA)
-      .get(/\/api\/v1\/workspaces\/[[0-9]+\/lists/)
+      .get(/^\/api\/v1\/workspaces\/[[0-9]+\/lists$/)
       .reply(200, zenkit.GET_LISTS_IN_WORKSPACE)
-      .get(/\/api\/v1\/lists\/[[0-9]+\/elements/)
+      .get(/^\/api\/v1\/lists\/[[0-9]+\/elements$/)
       .reply(200, zenkit.ELEMENTS_DATA)
       .post('/api/v1/lists/1263156/entries/filter')
       .reply(200, zenkit.SHOPPING_ENTRIES_DATA)
       .post('/api/v1/lists/1347812/entries/filter')
       .reply(200, zenkit.CUSTOM_ENTRIES_DATA)
-      .post(/\/api\/v1\/lists\/[[0-9]+\/entries\/filter/)
+      .post(/^\/api\/v1\/lists\/[[0-9]+\/entries\/filter$/)
       .reply(200, zenkit.TODO_ENTRIES_DATA)
-      .post('/api/v1/lists/1263156/entries')
-      .reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY)
-      .post('/api/v1/lists/1347812/entries')
+      .post(/^\/api\/v1\/lists\/[[0-9]+\/entries$/)
       .reply(200, zenkit.CREATE_SHOPPING_ENTRY_REPLY);
       
     baseNock = nock('https://base.zenkit.com')
@@ -36,15 +35,15 @@ describe("Testing the skill", function() {
       .matchHeader('Zenkit-API-Key', 'key')
       .get('/api/v1/users/me/workspacesWithLists')
       .reply(200, zenkit.ZENKIT_WORKSPACE_DATA)
-      .get(/\/api\/v1\/workspaces\/[[0-9]+\/lists/)
+      .get(/^\/api\/v1\/workspaces\/[[0-9]+\/lists$/)
       .reply(200, zenkit.GET_LISTS_IN_WORKSPACE)
-      .get(/\/api\/v1\/lists\/[[0-9]+\/elements/)
+      .get(/^\/api\/v1\/lists\/[[0-9]+\/elements$/)
       .reply(200, zenkit.ELEMENTS_DATA)
       .post('/api/v1/lists/1263156/entries/filter')
       .reply(200, zenkit.SHOPPING_ENTRIES_DATA)
       .post('/api/v1/lists/1347812/entries/filter')
       .reply(200, zenkit.CUSTOM_ENTRIES_DATA)
-      .post(/\/api\/v1\/lists\/[[0-9]+\/entries\/filter/)
+      .post(/^\/api\/v1\/lists\/[[0-9]+\/entries\/filter$/)
       .reply(200, zenkit.TODO_ENTRIES_DATA)
       
     nock.emitter.on("no match", (req) => {
@@ -205,7 +204,7 @@ describe("Testing the skill", function() {
     
     it('createList - happy path', async () => {
       createListNock = nock('https://todo.zenkit.com')
-        .post(/\/api\/v1\/workspaces\/[[0-9]+\/lists/, (body) => {
+        .post(/^\/api\/v1\/workspaces\/[[0-9]+\/lists$/, (body) => {
             expect(body.name).to.equal('custom list');
             return body
         })
@@ -234,11 +233,12 @@ describe("Testing the skill", function() {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       const List = await zenkitSDK.deleteList(12345);
       expect(deleteNock).to.have.been.requested
+      deleteNock.remove();
     });
     
     it('addItem - happy path', async () => {
       createItemNock = nock('https://todo.zenkit.com')
-        .post(/\/api\/v1\/lists\/[[0-9]+\/entries/, (body) => {
+        .post(/^\/api\/v1\/lists\/[[0-9]+\/entries$/, (body) => {
           expect(body).to.be.instanceof(Object);
           expect(body).to.have.all.keys(['bdbcc0f2-9dda-4381-8dd7-05b782dd6722_searchText', 
             'bdbcc0f2-9dda-4381-8dd7-05b782dd6722_text', 
@@ -252,7 +252,6 @@ describe("Testing the skill", function() {
           expect(body.uuid.length).to.equal(36);
           return body
         }).reply(200, zenkit.TODO_ENTRIES_DATA)
-        
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       await zenkitSDK.getListDetails(1065931);
       const item = await zenkitSDK.addItem(1065931, 'todo item one');
@@ -269,8 +268,8 @@ describe("Testing the skill", function() {
     });
     
     it('deleteItem - happy path', async () => {
-      deleteNock = nock('https://todo.zenkit.com')
-        .post('/api/v1/lists/12345/entries/delete/filter', (body) => {
+      deleteNockHappy = nock('https://todo.zenkit.com')
+        .post('/api/v1/lists/1234/entries/delete/filter', (body) => {
           expect(body.shouldDeleteAll).to.be.false;
           expect(body.filter).to.be.instanceof(Object);
           expect(body.listEntryUuids).to.be.instanceof(Array);
@@ -279,11 +278,13 @@ describe("Testing the skill", function() {
         }).reply(200, {})
         
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
-      const response = await zenkitSDK.deleteItem(12345, 'testUUID');
-      expect(deleteNock).to.have.been.requested
+      const response = await zenkitSDK.deleteItem(1234, 'testUUID');
+      console.log(response);
+      expect(deleteNockHappy).to.have.been.requested
+      deleteNockHappy.done();
     });
     it('deleteItem - item doesnt exist', async () => {
-      deleteNock = nock('https://todo.zenkit.com')
+      deleteNockExist = nock('https://todo.zenkit.com')
         .post('/api/v1/lists/12345/entries/delete/filter', (body) => {
           expect(body.shouldDeleteAll).to.be.false;
           expect(body.filter).to.be.instanceof(Object);
@@ -300,10 +301,12 @@ describe("Testing the skill", function() {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
       await expect(zenkitSDK.deleteItem(12345, 'testUUID')).to.be
         .rejectedWith('statusCode=404');
+      expect(deleteNockExist).to.have.been.requested;
+      deleteNockExist.done();
     });
     it('deleteItem - non-JSON response (unlikely to happen)', async () => {
       deleteNock = nock('https://todo.zenkit.com')
-        .post('/api/v1/lists/12345/entries/delete/filter', (body) => {
+        .post('/api/v1/lists/123456/entries/delete/filter', (body) => {
           expect(body.shouldDeleteAll).to.be.false;
           expect(body.filter).to.be.instanceof(Object);
           expect(body.listEntryUuids).to.be.instanceof(Array);
@@ -311,12 +314,13 @@ describe("Testing the skill", function() {
           return body
         }).reply(200, 'test');
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });
-      const response = await zenkitSDK.deleteItem(12345, 'testUUID');
+      const response = await zenkitSDK.deleteItem(123456, 'testUUID');
       expect(response).to.equal('test');
+      deleteNock.done();
     });
     
     it('completeItem - happy path', async () => {
-      deleteNock = nock('https://todo.zenkit.com')
+      completeNock = nock('https://todo.zenkit.com')
         .put('/api/v1/lists/1065931/entries/88', (body) => {
           expect(body.updateAction).to.equal('replace');
           expect(body['e4e56aaa-f1d2-4243-921e-25c87b1060e6_categories']).to.be.instanceof(Array);
@@ -328,6 +332,7 @@ describe("Testing the skill", function() {
       const response = await zenkitSDK.completeItem(1065931, 88);
       expect(response).to.be.instanceof(Object);
       expect(response.id).to.equal(88);
+      expect(completeNock).to.have.been.requested;
     });
     it('completeItem - list details not available', async () => {
       const zenkitSDK = new ZenkitSDK('key', { keyType: 'Authorization' });

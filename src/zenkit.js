@@ -184,7 +184,11 @@ class ZenkitSDK {
       [this.ListsInWorkspace[listId].titleUuid + '_searchText']: itemName,
       [this.ListsInWorkspace[listId].titleUuid + '_textType']: 'plain'
     };
-    this.ListsInWorkspace[listId].items = await this.handleRequest(scope, 'POST', parameters);
+    if (!('items' in this.ListsInWorkspace[listId])) {
+      this.ListsInWorkspace[listId].items = [];
+    }
+    this.ListsInWorkspace[listId].items.push(await this.handleRequest(scope, 'POST', parameters));
+    console.log(this.ListsInWorkspace[listId]);
     return this.ListsInWorkspace[listId].items.find(({displayString}) => displayString === itemName)
   }
 
@@ -271,19 +275,12 @@ class ZenkitSDK {
    //~ * @param  {Object} parameters
    //~ * @return {Promise}
    //~ */
-  async handleRequest(scope, method = 'GET', parameters = {}, queryParameters = {}) {
-    //~ Zenkit doesn't use querystrings
-    //~ queryParameters.ie = (new Date()).getTime();
-    //~ queryParameters.show_archived = false
-    var queryString = '';
-    //~ if (Object.entries(queryParameters).length > 0) {
-      //~ const queryString = `?${new URLSearchParams(queryParameters)}`;
-    //~ }
+  async handleRequest(scope, method = 'GET', parameters = {}) {
     // Define request options
     var options = {
       hostname: this.host,
       port: 443,
-      path: `/${this.apiScope}/${scope}${queryString}`,
+      path: `/${this.apiScope}/${scope}`,
       method: method,
       headers: {
         'Cache-Control':'no-cache',
